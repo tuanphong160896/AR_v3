@@ -1,0 +1,16 @@
+SPACE = ' '
+NO_SPACE = ''
+LINE_BREAK = '\n'
+COMMA = ','
+SEMICOLON = ';'
+DOUBLE_QUOTE = '"'
+OPEN_PAREN = '('
+CLOSE_PAREN = ')'
+HASH = '#'
+SLASH = "/"
+BACKSLASH = "\\"
+GITLOCATION = "rba"
+GITFOLDER = ".git"
+BRANCHMASTER = "master"
+REPORT_PREFIX = "Report_"
+TXTFILETYPE = ".txt"

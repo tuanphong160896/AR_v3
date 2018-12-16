@@ -1,13 +1,3 @@
-SPACE = ' '
-NO_SPACE = ''
-LINE_BREAK = '\n'
-COMMA = ','
-SEMICOLON = ';'
-DOUBLE_QUOTE = '"'
-OPEN_PAREN = '('
-CLOSE_PAREN = ')'
-HASH = '#'
-
 #################################################
 
 def Export_Report(report_name, report_content):

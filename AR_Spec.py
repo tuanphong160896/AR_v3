@@ -1,6 +1,6 @@
 import os
 import xlrd
-from AutoReivew_Common import Export_Report
+from AR_common import Export_Report
 from ReviewSpec_Def import *
 
 

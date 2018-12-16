@@ -1,6 +1,7 @@
 import os
-from AutoReivew_Common import *
-from Report_Definition import *
+from AR_common import *
+from AR_Script_report import *
+from AR_Script_lib import *
 
 
 #################################################
