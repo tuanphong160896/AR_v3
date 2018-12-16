@@ -1,7 +1,8 @@
 import os
-from AR_common import *
-from AR_Script_report import *
-from AR_Script_lib import *
+from Common_Def import *
+from Common_API import *
+from Script_Report_Def import *
+from Script_API import *
 
 
 #################################################
@@ -66,16 +67,15 @@ def ReviewTestScript(all_codes, begin_counter):
     
     for LineCounter, LineofCode in enumerate(all_codes[begin_counter:], start = begin_counter+1):
         pre_state = state
-        state = state_machine(LineofCode, Checked_lst, pre_state)
-        if ((state == BEGIN_TEST_CASE) and (pre_state != state)):
+        state, state_changed = state_machine(LineofCode, pre_state)
+        if ((state == BEGIN_TEST_CASE) and (state_changed)):
             BeginTestCase(LineofCode, LineCounter)
-        elif (state == TESTERDEFINE_STR):
-            TesterDef_lst.append(LineofCode)
-        elif (state == EXPTCALL):
-            ExptCalls_lst.append(LineofCode)
-        elif (state == VC):
-            VerfCrit_lst.append(LineofCode)
-        elif ((state == END_TEST_CASE) and (pre_state != state)):
+        if (state in TO_CHECK_LST):
+            Checked_lst.append(state)
+            if (state == TESTERDEFINE_STR): TesterDef_lst.append(LineofCode)
+            elif (state == EXPTCALL): ExptCalls_lst.append(LineofCode)
+            elif (state == VC): VerfCrit_lst.append(LineofCode)
+        elif ((state == END_TEST_CASE) and (state_changed)):
             checkTesterDef(TesterDef_lst)
             getCalledSeq(ExptCalls_lst, CalledSeq_lst)
             check_TO_CHECK_LST(Checked_lst, VerfCrit_lst)
@@ -88,7 +88,7 @@ def ReviewTestScript(all_codes, begin_counter):
 #################################################
 
 
-def state_machine(LineofCode, Checked_lst, pre_state):
+def state_machine(LineofCode, pre_state):
     retval = pre_state
 
     if (isBeginTestCase(LineofCode)):
@@ -100,11 +100,10 @@ def state_machine(LineofCode, Checked_lst, pre_state):
     else:
         for element_to_check in TO_CHECK_LST:
             if (element_to_check.lower() in LineofCode.lower()):
-                Checked_lst.append(element_to_check)
                 retval = element_to_check
                 break
 
-    return retval
+    return (retval, (retval != pre_state))
 
 
 ################################################# 
@@ -249,6 +248,7 @@ def checkInstance(fncname, param_count, InstContent_lst, CalledSeq_lst):
         report_content.append(WARNING + LACKOF + PARAMETER_CHECK + inst_name + OF_FUNCTION + fncname)
 
     Clear_List(InstContent_lst)
+
 
 #################################################
 

@@ -10,10 +10,13 @@ import glob
 from PyQt5.QtCore import Qt, QRect
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QToolButton, QPushButton, QLineEdit, QMessageBox, QLabel, QFileDialog
-import AR_Script as AR_Script
-
 from datetime import datetime
 from git import Repo
+
+from Common_Def import *
+import Script_Core
+
+
 ############################################################################
 
 
@@ -119,7 +122,7 @@ class App(QMainWindow):
             QMessageBox.warning(self, 'Auto Review Tool', 'Plese input a directory')
         else:
             report_name = getReportName(root_dir, "Script")
-            AR_Script.main_Script(root_dir, report_name)
+            Script_Core.main_Script(root_dir, report_name)
             self.button_open.setEnabled(True)
             QMessageBox.warning(self, 'Auto Review Tool', 'Review Test Script done !')
            
