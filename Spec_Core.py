@@ -6,7 +6,7 @@ from ReviewSpec_Def import *
 
 #################################################
 
-def main_Spec(input_dir, report_name):
+def 7777777777777777777777777777(input_dir, report_name):
     global report_content
     report_content = []
 

@@ -1,6 +1,4 @@
 *.txt
-*.pyc
-*.pyz
 test.py
 .vscode
 __pycache__

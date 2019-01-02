@@ -8,32 +8,31 @@ from Script_API import *
 #################################################
 
 
-def main_Script(input_dir, report_name):
-    global report_content
-    report_content = Init_List(1)
+def Script_MainFunction(inputdir_st, reportname_st):
+    global ReportContent_lst
+    ReportContent_lst = InitList(1)
 
-    script_dir = input_dir + TEST_SCRIPT_DIR
-    list_dir_script = findScriptdir(script_dir)
+    TargetDir_st = inputdir_st + TEST_SCRIPT_DIR
+    ScriptDir_lst = GetScriptList(TargetDir_st)
 
-    for dir_script in list_dir_script:
-        ScanTestScript(dir_script)
+    for scriptdir in ScriptDir_lst:
+        ScanTestScript(scriptdir)
 
-    Export_Report(report_name, report_content)
-
+    Export_Report(reportname_st, ReportContent_lst)
 
 #################################################
 
 
-def findScriptdir(script_dir):
-    Cfile_lst = Init_List(1)
+def GetScriptList(TargetDir_st):
+    Cfile_lst = InitList(1)
 
-    for path, subdirs, files in os.walk(script_dir):
+    for path, subdirs, files in os.walk(TargetDir_st):
         for filename in files:
             if filename.endswith('.c'):
                 filepath = os.path.join(path, filename)
                 Cfile_lst.append(filepath)
     if not (Cfile_lst):
-        report_content.append(NO_SCRIPT_FOUND)
+        ReportContent_lst.append(NO_SCRIPT_FOUND)
 
     return Cfile_lst
 
@@ -41,55 +40,59 @@ def findScriptdir(script_dir):
 #################################################
 
 
-def ScanTestScript(dir_script):
-    report_content.append(START_C_FILE + dir_script + PROCESSING)
+def ScanTestScript(scriptdir):
+    ReportContent_lst.append(START_C_FILE + scriptdir + PROCESSING)
     try:
-        C_file = open(dir_script, 'r')
-        all_codes = C_file.readlines()
-        C_file.close()
-        del C_file
+        Cfile_temp = open(scriptdir, 'r')
+        allcodes_lst = Cfile_temp.readlines()
+        Cfile_temp.close()
+        del Cfile_temp
     except:
-        report_content.append(UNABLE_OPEN_SCRIPT)
-        report_content.append(END_C_FILE)
+        ReportContent_lst.append(UNABLE_OPEN_SCRIPT)
+        ReportContent_lst.append(END_C_FILE)
         return
 
-    for LineCounter, LineofCode in enumerate(all_codes, start = 1):
+    for LineCounter, LineofCode in enumerate(allcodes_lst, start = 1):
         if (isEndDeclareTestCases(LineofCode)):
             break
-    ReviewTestScript(all_codes, LineCounter)
+
+    ReviewTestCase(allcodes_lst, LineCounter)
 
 #################################################
 
 
-def ReviewTestScript(all_codes, begin_counter):
-    state = UNDEFINED_STATE
-    TesterDef_lst, ExptCalls_lst, Checked_lst, CalledSeq_lst, VerfCrit_lst = Init_List(5)
+def ReviewTestCase(allcodes_lst, begin_counter):
+    state_st = UNDEFINED_STATE
+    TesterDef_lst, ExptCalls_lst, Checked_lst, CalledSeq_lst, VerfCrit_lst = InitList(5)
     
-    for LineCounter, LineofCode in enumerate(all_codes[begin_counter:], start = begin_counter+1):
-        pre_state = state
-        state, state_changed = state_machine(LineofCode, pre_state)
-        if ((state == BEGIN_TEST_CASE) and (state_changed)):
+    for LineCounter, LineofCode in enumerate(allcodes_lst[begin_counter:], start = begin_counter+1):
+        state_st, statechanged_b = StateMachine_TC(LineofCode, state_st)
+
+        if ((state_st == BEGIN_TEST_CASE) and (statechanged_b)):
             BeginTestCase(LineofCode, LineCounter)
-        if (state in TO_CHECK_LST):
-            Checked_lst.append(state)
-            if (state == TESTERDEFINE_STR): TesterDef_lst.append(LineofCode)
-            elif (state == EXPTCALL): ExptCalls_lst.append(LineofCode)
-            elif (state == VC): VerfCrit_lst.append(LineofCode)
-        elif ((state == END_TEST_CASE) and (state_changed)):
-            checkTesterDef(TesterDef_lst)
-            getCalledSeq(ExptCalls_lst, CalledSeq_lst)
-            check_TO_CHECK_LST(Checked_lst, VerfCrit_lst)
-        elif (state == END_ALL_TEST_CASES):
+        if (state_st in TO_CHECK_LST):
+            Checked_lst.append(state_st)
+            if (state_st == TESTERDEFINE_STR): 
+                TesterDef_lst.append(LineofCode)
+            elif (state_st == EXPTCALL): 
+                ExptCalls_lst.append(LineofCode)
+            elif (state_st == VC): 
+                VerfCrit_lst.append(LineofCode)
+        elif ((state_st == END_TEST_CASE) and (statechanged_b)):
+            CheckTesterDefine(TesterDef_lst)
+            GetCalledSeq(ExptCalls_lst, CalledSeq_lst)
+            CheckTOCHECKLIST(Checked_lst, VerfCrit_lst)
+        elif (state_st == END_ALL_TEST_CASES):
             break
 
-    Review_Call_Interface(all_codes, CalledSeq_lst , LineCounter)
+    ReviewCallInterface(allcodes_lst, CalledSeq_lst , LineCounter)
 
 
 #################################################
 
 
-def state_machine(LineofCode, pre_state):
-    retval = pre_state
+def StateMachine_TC(LineofCode, prestate_st):
+    retval = prestate_st
 
     if (isBeginTestCase(LineofCode)):
         retval = BEGIN_TEST_CASE
@@ -103,7 +106,7 @@ def state_machine(LineofCode, pre_state):
                 retval = element_to_check
                 break
 
-    return (retval, (retval != pre_state))
+    return (retval, (retval != prestate_st))
 
 
 ################################################# 
@@ -111,122 +114,122 @@ def state_machine(LineofCode, pre_state):
 
 def BeginTestCase(lineofcode, linecounter):
     TestCase_name = (lineofcode.strip())[5:-11]
-    report_content.append(START_TESTCASE + TestCase_name + AT_LINE + str(linecounter) + PROCESSING)
+    ReportContent_lst.append(START_TESTCASE + TestCase_name + AT_LINE + str(linecounter) + PROCESSING)
 
     
 ################################################# 
 
 
-def getCalledSeq(ExptCalls_lst, CalledSeq_lst):
+def GetCalledSeq(ExptCalls_lst, CalledSeq_lst):
     for lineofcode in ExptCalls_lst:
         if (isCalledSeq(lineofcode)):
-            calledseq = getInsideQuote(lineofcode)
-            CalledSeq_lst.append(calledseq)
+            calledseq_st = getInsideQuote(lineofcode)
+            CalledSeq_lst.append(calledseq_st)
 
-    Clear_List(ExptCalls_lst)
+    ClearList(ExptCalls_lst)
 
 
 ##################################################
    
 
-def checkTesterDef(TesterDef_lst):
-    list_Declare, list_Init = Init_List(2)
+def CheckTesterDefine(TesterDef_lst):
+    declared_lst, initialised_lst = InitList(2)
 
     for lineofcode in TesterDef_lst:
         if (isTesterDefDeclare(lineofcode)):
-            var_Declare = (lineofcode.split()[1]).replace(SEMICOLON, NO_SPACE)
-            list_Declare.append(var_Declare)
-        elif (isisTesterInit(lineofcode)):
-            var_Init = getInsideBracket(lineofcode)
-            list_Init.append(var_Init)
+            varname_st = (lineofcode.split()[1]).replace(SEMICOLON, NO_SPACE)
+            declared_lst.append(varname_st)
+        elif (isTesterDefInit(lineofcode)):
+            varname_st = getInsideBracket(lineofcode)
+            initialised_lst.append(varname_st)
 
-    for elem in list_Declare:
-        if elem not in list_Init:
-            report_content.append(WARNING + elem + UNITIALIZED)
+    for declaredvar in declared_lst:
+        if declaredvar not in initialised_lst:
+            ReportContent_lst.append(WARNING + declaredvar + UNITIALIZED)
 
-    Clear_List(TesterDef_lst)
+    ClearList(TesterDef_lst)
 
 
 ##################################################  
 
 
-def check_TO_CHECK_LST(Checked_lst, VerfCrit_lst):
+def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst):
     for tocheck in TO_CHECK_LST:
-        if tocheck not in Checked_lst:
-            report_content.append(WARNING + LACKOF + tocheck)
+        if ((tocheck not in Checked_lst) and (tocheck != TESTERDEFINE_STR)):
+            ReportContent_lst.append(WARNING + LACKOF + tocheck)
     
     if (VC in Checked_lst):
-        VCmapped_check = 0
+        VCmapped_b = False
         for lineofcode in VerfCrit_lst:
-            if isVC(lineofcode):
-                VCmapped_check = 1
+            if isVCmapped(lineofcode):
+                VCmapped_b = True
                 break 
-        if not (VCmapped_check):
-            report_content.append(WARNING + NOVCMAPPED)
+        if not (VCmapped_b):
+            ReportContent_lst.append(WARNING + NOVCMAPPED)
 
-    Clear_List(Checked_lst, VerfCrit_lst)
+    ClearList(Checked_lst, VerfCrit_lst)
     
 
 ##################################################  
 
 
-def Review_Call_Interface(all_codes, CalledSeq_lst, begin_counter):
-    report_content.append(START_STUBFNC + PROCESSING)
-    state = UNDEFINED_STATE
-    fnc_used = 0
-    for LineCounter, LineofCode in enumerate(all_codes[begin_counter:], start = begin_counter+1 ):
-        pre_state = state
-        state = state_machine_stub_functions(LineofCode, pre_state, fnc_used)
+def ReviewCallInterface(allcodes_lst, CalledSeq_lst, begin_counter):
+    ReportContent_lst.append(START_STUBFNC + PROCESSING)
+    state_st = UNDEFINED_STATE
+    fncinused_b = False
+    for LineCounter, LineofCode in enumerate(allcodes_lst[begin_counter:], start = begin_counter+1 ):
+        state_st, statechanged_b = StateMachine_StubFnc(LineofCode, state_st, fncinused_b)
 
-        if ((state == BEGINFUNC) and (pre_state != state)):
-            fncname = (LineofCode.split())[4]
-            fnc_used = checkusedfnc(fncname, CalledSeq_lst)
-            FncDec_lst, InstContent_lst = Init_List(2)
-        elif (state == DECLAREFNC):
-            FncDec_lst.append(LineofCode)
-        elif ((state == REGISTERCALL) and (pre_state != state)):
-            param_count = CountParam(FncDec_lst)
-        elif (state == BEGININTSTANCE):
-            InstContent_lst.append(LineofCode)
-        elif ((state == ENDINSTANCE) and (pre_state != state)):
-            checkInstance(fncname, param_count, InstContent_lst, CalledSeq_lst)
-        elif (state == ENDFUNC):
-            fnc_used = 0
-        elif (state == ENDFILE):
-            report_content.append(END_C_FILE)
+        if ((state_st == BEGINFUNC) and (statechanged_b)):
+            fncname_st = (LineofCode.split())[4]
+            fncinused_b = CheckUsedFnc(fncname_st, CalledSeq_lst)
+        elif (state_st == DECLAREFNC):
+            if (statechanged_b):
+                FuncDeclare_lst, InstanceContent_lst = InitList(2)
+            FuncDeclare_lst.append(LineofCode)
+        elif ((state_st == REGISTERCALL) and (statechanged_b)):
+            paramcnt_int = CountParam(FuncDeclare_lst)
+        elif (state_st == BEGININTSTANCE):
+            InstanceContent_lst.append(LineofCode)
+        elif ((state_st == ENDINSTANCE) and (statechanged_b)):
+            checkInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst)
+        elif (state_st == ENDFUNC):
+            fncinused_b = False
+        elif (state_st == ENDFILE):
+            ReportContent_lst.append(END_C_FILE)
             break
 
         
 #################################################
 
 
-def state_machine_stub_functions(LineofCode, pre_state, fnc_used):
-    retval = pre_state
+def StateMachine_StubFnc(LineofCode, prestate_st, fncinused_b):
+    retval = prestate_st
 
     if (isBeginStubFunc(LineofCode)):
         retval = BEGINFUNC
-    elif ((pre_state == BEGINFUNC) and (isNotComment(LineofCode)) and (fnc_used)):
+    elif ((prestate_st == BEGINFUNC) and (isNotComment(LineofCode)) and (fncinused_b)):
         retval = DECLAREFNC
-    elif (isRegisterCall(LineofCode) and (fnc_used)):
+    elif (isRegisterCall(LineofCode) and (fncinused_b)):
         retval = REGISTERCALL
-    elif (isBeginInstance(LineofCode) and (fnc_used)):
+    elif (isBeginInstance(LineofCode) and (fncinused_b)):
         retval = BEGININTSTANCE
-    elif ((pre_state == BEGININTSTANCE)) and (isEndInstance(LineofCode)):
+    elif ((prestate_st == BEGININTSTANCE)) and (isEndInstance(LineofCode)):
         retval = ENDINSTANCE
     elif (isEndStubFunction(LineofCode)):
         retval = ENDFUNC
     elif (isEndFile(LineofCode)):
         retval = ENDFILE
     
-    return retval
+    return (retval, (retval != prestate_st))
 
 
 #################################################
 
 
-def checkusedfnc(fncname, CalledSeq_lst) -> bool:
-    for elem in CalledSeq_lst:
-        if (fncname in elem):
+def CheckUsedFnc(fncname_st, CalledSeq_lst) -> bool:
+    for sequence in CalledSeq_lst:
+        if (fncname_st in sequence):
             return True
     return False
 
@@ -234,39 +237,39 @@ def checkusedfnc(fncname, CalledSeq_lst) -> bool:
 #################################################
 
 
-def checkInstance(fncname, param_count, InstContent_lst, CalledSeq_lst):
-    check_count = 0
-    for elem in InstContent_lst:
-        if (isBeginInstance(elem)):
-            inst_name = getInsideBracket(elem)
-        check_count += elem.count(CHECK_PARAM)
+def checkInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst):
+    Checkcnt_int = 0
+    for lineofcode in InstanceContent_lst:
+        if (isBeginInstance(lineofcode)):
+            instancename_st = getInsideBracket(lineofcode)
+        Checkcnt_int += lineofcode.count(CHECK_PARAM)
 
-    seq_name = fncname + HASH + inst_name
-    if (seq_name not in CalledSeq_lst):
+    seqname_st = fncname_st + HASH + instancename_st
+    if (seqname_st not in CalledSeq_lst):
         return
-    elif (check_count < param_count):
-        report_content.append(WARNING + LACKOF + PARAMETER_CHECK + inst_name + OF_FUNCTION + fncname)
+    elif (Checkcnt_int < paramcnt_int):
+        ReportContent_lst.append(WARNING + LACKOF + PARAMETER_CHECK + instancename_st + OF_FUNCTION + fncname_st)
 
-    Clear_List(InstContent_lst)
+    ClearList(InstanceContent_lst)
 
 
 #################################################
 
 
-def CountParam(FncDec_lst) -> int:
-    FncDec_str = NO_SPACE.join(FncDec_lst)
-    FncDec_str = FncDec_str.replace(SPACE, NO_SPACE).replace(LINE_BREAK, NO_SPACE)
-    input_param = getInsideBracket(FncDec_str)
-    comma_count = FncDec_str.count(COMMA)
+def CountParam(FuncDeclare_lst):
+    FuncDeclare_st = NO_SPACE.join(FuncDeclare_lst)
+    FuncDeclare_st  = FuncDeclare_st.replace(SPACE, NO_SPACE).replace(LINE_BREAK, NO_SPACE)
+    inputparam_st = getInsideBracket(FuncDeclare_st)
+    comma_cnt_int = FuncDeclare_st.count(COMMA)
 
-    if (comma_count > 0): 
-        param_count = comma_count + 1
+    if (comma_cnt_int > 0): 
+        paramcnt_int = comma_cnt_int + 1
     else:
-        if not (input_param): param_count = 0
-        else: param_count = 1
+        if not (inputparam_st): paramcnt_int = 0
+        else: paramcnt_int = 1
 
-    Clear_List(FncDec_lst)
-    return param_count
+    ClearList(FuncDeclare_lst)
+    return paramcnt_int
 
 
 #################################################
