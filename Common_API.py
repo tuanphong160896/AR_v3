@@ -2,20 +2,20 @@ from Common_Def import *
 
 #################################################
 
-def Export_Report(report_name, report_content):
-    txt_file = open(report_name, 'w')
-    for content in report_content:
-        print(content)
-        txt_file.write(content)
+def Export_Report(reportname_st, reportcontent_lst):
+    txt_file = open(reportname_st, 'w')
+    for eachline in reportcontent_lst:
+        print(eachline)
+        txt_file.write(eachline)
     txt_file.close()
     del txt_file
         
 #################################################
 
 
-def InitList(numberoflists) -> list:
-    if (numberoflists > 1):
-        return ([] for _ in range(numberoflists))
+def InitList(listnum_int) -> list:
+    if (listnum_int > 1):
+        return ([] for _ in range(listnum_int))
     else: return []
 
 
@@ -29,26 +29,26 @@ def ClearList(*all_list) -> list:
 
 #################################################
 
-def getInsideQuote(lineofcode_st) -> str:
-    if (lineofcode_st.count(DOUBLE_QUOTE) == 2):
-        beginidx_int: int = lineofcode_st.find(DOUBLE_QUOTE) + 1
-        endidx_int: int = lineofcode_st.rfind(DOUBLE_QUOTE)
-        inside_str: str = lineofcode_st[beginidx_int:endidx_int]
-        inside_str = inside_str.replace(SEMICOLON, NO_SPACE)
-        return inside_str
+def getInsideQuote(lineofcode) -> str:
+    if (lineofcode.count(DOUBLE_QUOTE) == 2):
+        beginidx_int: int = lineofcode.find(DOUBLE_QUOTE) + 1
+        endidx_int: int = lineofcode.rfind(DOUBLE_QUOTE)
+        inside_st: str = lineofcode[beginidx_int:endidx_int]
+        inside_st = inside_st.replace(SEMICOLON, NO_SPACE)
+        return inside_st
     return None
 
 
 #################################################
 
 
-def getInsideBracket(lineofcode_st) -> str:
-    if ((OPEN_PAREN and CLOSE_PAREN) in lineofcode_st):
-        beginidx_int: int = lineofcode_st.find(OPEN_PAREN) + 1
-        endidx_int: int = lineofcode_st.rfind(CLOSE_PAREN)
-        inside_str: str = lineofcode_st[beginidx_int:endidx_int]
-        inside_str = inside_str.replace(DOUBLE_QUOTE, NO_SPACE)
-        return inside_str
+def getInsideBracket(lineofcode) -> str:
+    if ((OPEN_PAREN and CLOSE_PAREN) in lineofcode):
+        beginidx_int: int = lineofcode.find(OPEN_PAREN) + 1
+        endidx_int: int = lineofcode.rfind(CLOSE_PAREN)
+        inside_st: str = lineofcode[beginidx_int:endidx_int]
+        inside_st = inside_st.replace(DOUBLE_QUOTE, NO_SPACE)
+        return inside_st
     return None
 
 
