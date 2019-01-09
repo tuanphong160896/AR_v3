@@ -34,16 +34,25 @@ def Spec_MainFunction(specdir_st, reportname_st):
 
 #################################################
 
+# Name: GetSpecList
+# Param: SpecDir_st: directory to 01_TestSpecification folder
+# Return: allfiles_lst: list to store all directories of .xlsm files
+# Description: #1: Initialize return list
+#              #2: For given directory, browse all .xlsm files in all sub-dirs and store their directories in allfiles_lst
+#              #3: If no .xlsm file found, throw WARNING to report
+
+#################################################
+
 
 def GetSpecList(SpecDir_st):
-    allfiles_lst = InitList(1)
+    allfiles_lst = InitList(1)      #1
 
-    for path, dirs, files in os.walk(SpecDir_st):
+    for path, dirs, files in os.walk(SpecDir_st):       #2
         for filename in files:
             if not (filename.startswith('~$')):     #check for temporary if file is opening
                 filepath = os.path.join(path, filename)
                 allfiles_lst.append(filepath)
-    if not (allfiles_lst):
+    if not (allfiles_lst):     #3 
         ReportContent_lst.append(NO_SPEC_FOUND)
 
     return allfiles_lst
