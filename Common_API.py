@@ -2,6 +2,7 @@ from Common_Def import *
 
 #################################################
 
+
 def Export_Report(reportname_st, reportcontent_lst):
     txt_file = open(reportname_st, 'w')
     for eachline in reportcontent_lst:
@@ -10,6 +11,7 @@ def Export_Report(reportname_st, reportcontent_lst):
     txt_file.close()
     del txt_file
         
+
 #################################################
 
 
@@ -29,6 +31,7 @@ def ClearList(*all_list) -> list:
 
 #################################################
 
+
 def getInsideQuote(lineofcode) -> str:
     if (lineofcode.count(DOUBLE_QUOTE) == 2):
         beginidx_int: int = lineofcode.find(DOUBLE_QUOTE) + 1
@@ -36,7 +39,7 @@ def getInsideQuote(lineofcode) -> str:
         inside_st: str = lineofcode[beginidx_int:endidx_int]
         inside_st = inside_st.replace(SEMICOLON, NO_SPACE)
         return inside_st
-    return None
+    return NO_SPACE
 
 
 #################################################
@@ -49,7 +52,7 @@ def getInsideBracket(lineofcode) -> str:
         inside_st: str = lineofcode[beginidx_int:endidx_int]
         inside_st = inside_st.replace(DOUBLE_QUOTE, NO_SPACE)
         return inside_st
-    return None
+    return NO_SPACE
 
 
 #################################################

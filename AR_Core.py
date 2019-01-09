@@ -12,9 +12,8 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QToolButton, QPushButton, QLineEdit, QMessageBox, QLabel, QFileDialog
 from datetime import datetime
 from git import Repo
-
 from Common_Def import *
-import Script_Core
+import Script_Core, Spec_Core
 
 
 ############################################################################
@@ -130,7 +129,7 @@ class App(QMainWindow):
             QMessageBox.warning(self, 'Auto Review Tool', 'Plese input a directory')
         else:
             report_name = getReportName(root_dir, 'Spec')
-            AutoReview_Spec.main_Spec(root_dir, report_name)
+            Spec_Core.Spec_MainFunction(root_dir, report_name)
             self.button_open.setEnabled(True)
             QMessageBox.warning(self, 'Auto Review Tool', 'Review Test Spec done !')
 

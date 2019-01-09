@@ -24,36 +24,38 @@ def Script_MainFunction(inputdir_st, reportname_st):
     ReportContent_lst = InitList(1)
 
     ScriptDir_st = inputdir_st + TEST_SCRIPT_DIR    #2
-    ScriptDir_lst = GetScriptList(ScriptDir_st)     #3
+    ScriptFile_lst = GetScriptList(ScriptDir_st)     #3
 
-    for scriptdir in ScriptDir_lst:     #4
-        ScanTestScript(scriptdir)
+    for scriptfile in ScriptFile_lst:     #4
+        ScanTestScript(scriptfile)
 
     Export_Report(reportname_st, ReportContent_lst)     #5
+
 
 #################################################
 
 # Name: GetScriptList
 # Param: ScriptDir_st: directory to 02_TestScript folder
-# Return: Cfile_lst: list to store all directories of .c files
+# Return: allfiles_lst: list to store all directories of .c files
 # Description: #1: Initialize return list
-#              #2: For given directory, browse all .c files in all sub-dirs and store their directories in Cfile_lst
+#              #2: For given directory, browse all .c files in all sub-dirs and store their directories in allfiles_lst
 #              #3: If no .c file found, throw WARNING to report
 
 #################################################
 
+
 def GetScriptList(ScriptDir_st):
-    Cfile_lst = InitList(1)     #1
+    allfiles_lst = InitList(1)     #1
 
     for path, subdirs, files in os.walk(ScriptDir_st):      #2
         for filename in files:
             if filename.endswith('.c'):
                 filepath = os.path.join(path, filename)
-                Cfile_lst.append(filepath)
-    if not (Cfile_lst):     #3
+                allfiles_lst.append(filepath)
+    if not (allfiles_lst):     #3
         ReportContent_lst.append(NO_SCRIPT_FOUND)
 
-    return Cfile_lst
+    return allfiles_lst
 
 
 #################################################
@@ -69,6 +71,7 @@ def GetScriptList(ScriptDir_st):
 #              #5: Start Review test case from the LineCounter line
 
 #################################################
+
 
 def ScanTestScript(scriptdir):
     ReportContent_lst.append(START_C_FILE + scriptdir + PROCESSING)     #1
@@ -89,6 +92,7 @@ def ScanTestScript(scriptdir):
 
     ReviewTestCases(allcodes_lst, LineCounter)      #5
 
+
 #################################################
 
 # Name: ReviewTestCases
@@ -106,6 +110,7 @@ def ScanTestScript(scriptdir):
 #             #10: Begin review process of Stub and Isolate functions
 
 #################################################
+
 
 def ReviewTestCases(allcodes_lst, begin_counter):
     state_st = UNDEFINED_STATE      #1
@@ -133,6 +138,7 @@ def ReviewTestCases(allcodes_lst, begin_counter):
 
     ReviewCallInterface(allcodes_lst, CalledSeq_lst , LineCounter)      #10
 
+
 #################################################
 
 # Name: StateMachine_TC
@@ -145,6 +151,7 @@ def ReviewTestCases(allcodes_lst, begin_counter):
 #              #2: Compare in lower case because tester may use different commments
             
 #################################################
+
 
 def StateMachine_TC(LineofCode, prestate_st):
     retval = prestate_st        #1
@@ -166,6 +173,7 @@ def StateMachine_TC(LineofCode, prestate_st):
 
 ################################################# 
 
+
 # Name: BeginTestCase
 # Param: lineofcode: line of code
 #        linecounter: line number
@@ -175,12 +183,15 @@ def StateMachine_TC(LineofCode, prestate_st):
 #                  Ex: "void Fls_Read_Cfg01_InvalidLength(int doIt){" ==> "Fls_Read_Cfg01_InvalidLength"
 #              #2: Notify in report the beginning of each test case
 
+
 #################################################
+
 
 def BeginTestCase(lineofcode, linecounter):
     tcname_st = (lineofcode.strip())[5:-11]     #1
     ReportContent_lst.append(START_TESTCASE + tcname_st + AT_LINE + str(linecounter) + PROCESSING)      #2
     
+
 ################################################# 
 
 # Name: GetCalledSeq
@@ -195,6 +206,7 @@ def BeginTestCase(lineofcode, linecounter):
 
 ################################################# 
 
+
 def GetCalledSeq(ExptCalls_lst, CalledSeq_lst):
     for lineofcode in ExptCalls_lst:
         if (isCalledSeq(lineofcode)):       #1
@@ -204,8 +216,9 @@ def GetCalledSeq(ExptCalls_lst, CalledSeq_lst):
 
     ClearList(ExptCalls_lst)        #2
 
+
 ##################################################
-   
+
 # Name: CheckTesterDefine
 # Param: TesterDef_lst: stores the contents in Tester define of each test case
 # Return: None
@@ -222,6 +235,7 @@ def GetCalledSeq(ExptCalls_lst, CalledSeq_lst):
 #              #4: Clear TesterDef_lst (after each test case)
 
 ################################################# 
+
 
 def CheckTesterDefine(TesterDef_lst):
     declared_lst, initialised_lst = InitList(2)
@@ -240,6 +254,7 @@ def CheckTesterDefine(TesterDef_lst):
 
     ClearList(TesterDef_lst)        #4
 
+
 ##################################################  
 
 # Name: CheckTOCHECKLIST
@@ -252,6 +267,7 @@ def CheckTesterDefine(TesterDef_lst):
 #              #3: Clear Checked_lst, VerfCrit_lst after each test case
 
 ##################################################  
+
 
 def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst):
     for tocheck in TO_CHECK_LST:
@@ -269,6 +285,7 @@ def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst):
 
     ClearList(Checked_lst, VerfCrit_lst)        #3
     
+
 ################################################## 
 
 # Name: ReviewCallInterface
@@ -281,13 +298,14 @@ def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst):
 #             #2: This lineofcode is the first line of each function (comment)
 #                 Get function name by the 5th element of the string
 #                 Ex: "/* Stub for function rba_BswSrv_MemCopy */" ==> "rba_BswSrv_MemCopy"
-#                 Boolean fncinused_b indicates whether this function is used
+#                 Boolean fncinused_b indicates whether this stub/isolate function is used
 #             #3: Store function declaration
 #             #4: Count number of input params
-              #5: Process for each instance
+#              #5: Process for each instance
 #             #6: Notify to report the end of test script file              
 
 #################################################
+
 
 def ReviewCallInterface(allcodes_lst, CalledSeq_lst, begin_counter):
     ReportContent_lst.append(START_STUBFNC + PROCESSING)
@@ -309,19 +327,20 @@ def ReviewCallInterface(allcodes_lst, CalledSeq_lst, begin_counter):
         elif (state_st == BEGININTSTANCE):
             InstanceContent_lst.append(LineofCode)
         elif ((state_st == ENDINSTANCE) and (statechanged_b)):      #5
-            checkInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst)
+            CheckFncInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst)
         elif (state_st == ENDFUNC):
             fncinused_b = False
         elif (state_st == ENDFILE):     #6
             ReportContent_lst.append(END_C_FILE)        
             break
 
+
 #################################################
 
 # Name: StateMachine_StubFnc
 # Param: LineofCode: each line of code
 #        prestate_st: the previous state
-#        fncinused_b: indicates function has been used
+#        fncinused_b: indicates function has been used or not
 # Return: retval: current state
 #         retval != prestate_st: boolean variable to indicate state changed or not          
 # Description: Detect state for each line of code (only for test cases part)
@@ -329,6 +348,7 @@ def ReviewCallInterface(allcodes_lst, CalledSeq_lst, begin_counter):
 #              #2: Only if this function was used, return DECLAREFNC
 
 ################################################
+
 
 def StateMachine_StubFnc(LineofCode, prestate_st, fncinused_b):
     retval = prestate_st        #1
@@ -353,6 +373,15 @@ def StateMachine_StubFnc(LineofCode, prestate_st, fncinused_b):
 
 #################################################
 
+# Name: CheckUsedFnc
+# Param: fncname_st: stub/isolate function name
+#        CalledSeq_lst: store the called sequences of all test cases in each test script
+# Return: True: stub/isolate function has been used in test cases
+#         False: stub/isolate function has never been used  
+# Description: Get each stub/isolate function name and compare with list of used functions in test cases
+
+################################################
+
 
 def CheckUsedFnc(fncname_st, CalledSeq_lst) -> bool:
     for sequence in CalledSeq_lst:
@@ -363,16 +392,31 @@ def CheckUsedFnc(fncname_st, CalledSeq_lst) -> bool:
 
 #################################################
 
+# Name: CheckFncInstance
+# Param: fncname_st: stub/isolate function name
+#        paramcnt_int: number of input params of stub/isolate function
+#        InstanceContent_lst: store contents of each INSTANCE in stub/isolate function
+#        CalledSeq_lst: store the called sequences of all test cases in each test script
+# Return: None
+# Description: Check if this INSTANCE has CHECKED enough input params or not
+#              #1: count number of keywords 'CHECK' in this INSTANCE
+#              #2: get sequence name = Function name + # + Instance name (Expected call)
+#              #3: check if this sequence is in CalledSeq_lst (used in Test cases)
+#                  If used and this instance did not have enough CHECK, notify in report
 
-def checkInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst):
+################################################
+
+
+def CheckFncInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst):
     checkcnt_int = 0
-    for lineofcode in InstanceContent_lst:
+    for lineofcode in InstanceContent_lst:      #1
         if (isBeginInstance(lineofcode)):
             instancename_st = getInsideBracket(lineofcode)
         checkcnt_int += lineofcode.count(CHECK_PARAM)
 
-    seqname_st = fncname_st + HASH + instancename_st
-    if (seqname_st not in CalledSeq_lst):
+    seqname_st = fncname_st + HASH + instancename_st        #2
+
+    if (seqname_st not in CalledSeq_lst):       #3
         return
     elif (checkcnt_int < paramcnt_int):
         ReportContent_lst.append(WARNING + LACKOF + PARAMETER_CHECK + instancename_st + OF_FUNCTION + fncname_st)
@@ -382,16 +426,27 @@ def checkInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst):
 
 #################################################
 
+# Name: CountParam
+# Param: FuncDeclare_lst: store contents of stub/isolate functions declaration
+# Return: paramcnt_int: number of input of input params of this function
+# Description: #1: convert from list to string
+#              #2: get contents inside brackets, which are input params declaration
+#              #3: count number of commmas in param declaration
+#              #4: If inputparam_st is empty, function has no input param
+#                  Else, and no comma found, function has one input param
+
+#################################################
+
 
 def CountParam(FuncDeclare_lst) -> int:
-    fncdeclare_st = NO_SPACE.join(FuncDeclare_lst)
+    fncdeclare_st = NO_SPACE.join(FuncDeclare_lst)      #1
     fncdeclare_st  = fncdeclare_st.replace(SPACE, NO_SPACE).replace(LINE_BREAK, NO_SPACE)
-    inputparam_st = getInsideBracket(fncdeclare_st)
-    commacnt_int = fncdeclare_st.count(COMMA)
+    inputparam_st = getInsideBracket(fncdeclare_st)     #2
+    commacnt_int = fncdeclare_st.count(COMMA)       #3
 
-    if (commacnt_int > 0): 
+    if (commacnt_int > 0):
         paramcnt_int = commacnt_int + 1
-    else:
+    else:       #4
         if not (inputparam_st): paramcnt_int = 0
         else: paramcnt_int = 1
 

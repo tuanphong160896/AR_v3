@@ -1,129 +1,142 @@
 import os
 import xlrd
-from AR_common import Export_Report
-from ReviewSpec_Def import *
-
+from Common_Def import *
+from Common_API import *
+from Spec_Report_Def import *
 
 #################################################
 
-def 7777777777777777777777777777(input_dir, report_name):
-    global report_content
-    report_content = []
+# Name: Spec_MainFunction
+# Param: inputdir_st: directory to Component name
+#        reportname_st: .txt report name
+# Return: None
+# Desciption: #1: Initialize list to store report content
+#             #2: Concatenates string to get directory to 01_TestSpecification folder
+#             #3: Call GetSpecList to get all directories to test spec file (.xlsm)
+#             #4: For each test spec, start Review process
+#             #5: Push all report contents to .txt file
 
-    spec_dir = input_dir + TEST_SPEC_DIR
-    specfile_lst = findSpecdir(spec_dir)
+#################################################
 
-    for specfile in specfile_lst:
+
+def Spec_MainFunction(specdir_st, reportname_st):
+    global ReportContent_lst        #1
+    ReportContent_lst = InitList(1)
+
+    SpecDir_st = specdir_st + TEST_SPEC_DIR       #2
+    SpecFile_lst = GetSpecList(SpecDir_st)      #3
+
+    for specfile in SpecFile_lst:       #4
         OpenWorkbook(specfile)
     
-    Export_Report(report_name, report_content)
+    Export_Report(reportname_st, ReportContent_lst)     #5
 
 
 #################################################
 
 
-def findSpecdir(spec_dir):
-    specfile_lst = []
-    for path, dirs, files in os.walk(spec_dir):
+def GetSpecList(SpecDir_st):
+    allfiles_lst = InitList(1)
+
+    for path, dirs, files in os.walk(SpecDir_st):
         for filename in files:
-            if not (filename.startswith('~$')): #check for temporary if file is opening
+            if not (filename.startswith('~$')):     #check for temporary if file is opening
                 filepath = os.path.join(path, filename)
-                specfile_lst.append(filepath)
+                allfiles_lst.append(filepath)
+    if not (allfiles_lst):
+        ReportContent_lst.append(NO_SPEC_FOUND)
 
-    if not (specfile_lst):
-        report_content.append(NO_SPEC_FOUND)
-
-    return specfile_lst
+    return allfiles_lst
 
 
 #################################################
 
 
 def OpenWorkbook(specfile):
-    report_content.append(START_SPEC_FILE + specfile + PROCESSING)
+    ReportContent_lst.append(START_SPEC_FILE + specfile + PROCESSING)
     try:
         spec_workbook = xlrd.open_workbook(specfile)
-        all_sheets = spec_workbook.sheet_names()
+        allsheets_lst = spec_workbook.sheet_names()
     except Exception as e:
-        report_content.append(UNABLE_OPEN_SPEC)
-        report_content.append(END_SPEC_FILE)
+        ReportContent_lst.append(UNABLE_OPEN_SPEC)
+        ReportContent_lst.append(END_SPEC_FILE)
         return
 
     check_Stream(spec_workbook)
-    tcunit_lst = get_TCSheet(all_sheets)
-    check_TCSheet(tcunit_lst, spec_workbook)
+    tcunit_lst = GetTCSheets(allsheets_lst)
+    CheckTCSheet(tcunit_lst, spec_workbook)
 
     spec_workbook.release_resources()
     del spec_workbook
-    report_content.append(END_SPEC_FILE)
+    ReportContent_lst.append(END_SPEC_FILE)
 
 
 #################################################
 
 
 def check_Stream(spec_workbook):
-    report_content.append(CHECKING + TEST_RESULT_SUMMARY_SHEET + PROCESSING)
+    ReportContent_lst.append(CHECKING + TEST_RESULT_SUMMARY_SHEET + PROCESSING)
     try:
         current_sheet = spec_workbook.sheet_by_name(TEST_RESULT_SUMMARY_SHEET)
-    except Exception as e:
-        report_content.append(WARNING + UNABLE_OPEN_SHEET + TEST_RESULT_SUMMARY_SHEET)
+    except:
+        ReportContent_lst.append(WARNING + UNABLE_OPEN_SHEET + TEST_RESULT_SUMMARY_SHEET)
         return
 
     try:
-        stream_content = current_sheet.cell(STREAM_POSITION[0], STREAM_POSITION[1]).value
+        stream_st = current_sheet.cell(STREAM_POSITION[0], STREAM_POSITION[1]).value
     except:
-        report_content.append(WARNING + UNABLE_READ_STREAM)
+        ReportContent_lst.append(WARNING + UNABLE_READ_STREAM)
         return
 
-    if (CUBAS not in stream_content):
-        report_content.append(WARNING + CUBAS + CONTENT_EMPTY)
+    if (CUBAS not in stream_st):
+        ReportContent_lst.append(WARNING + CUBAS + CONTENT_EMPTY)
 
 
 #################################################
 
 
-def get_TCSheet(all_sheets):
-    TCUnit_sheet_lst = []
-    for sheet_name in all_sheets:
-        if (TCUNIT_SHEET in sheet_name):
-            TCUnit_sheet_lst.append(sheet_name)
+def GetTCSheets(allsheets_lst):
+    TCsheet_lst = InitList(1)
+    for sheet in allsheets_lst:
+        if (TCUNIT_SHEET in sheet):
+            TCsheet_lst.append(sheet)
 
-    if not (TCUnit_sheet_lst):
-        report_content.append(WARNING + TCUNIT_NOT_FOUND)
+    if not (TCsheet_lst):
+        ReportContent_lst.append(WARNING + TCUNIT_NOT_FOUND)
         return
     else:
-        return TCUnit_sheet_lst
+        return TCsheet_lst
 
 #################################################
 
 
-def check_TCSheet(tcunit_lst, spec_workbook):
-    for tc_unit_sheet in tcunit_lst:
-        report_content.append(CHECKING + tc_unit_sheet + PROCESSING)
-        current_sheet = spec_workbook.sheet_by_name(tc_unit_sheet)
+def CheckTCSheet(tcunit_lst, spec_workbook):
+    for tcsheet in tcunit_lst:
+        ReportContent_lst.append(CHECKING + tcsheet + PROCESSING)
+        current_sheet = spec_workbook.sheet_by_name(tcsheet)
 
         for index, pos_to_check in enumerate(LIST_TO_CHECK_POS):
             try:
-                cell_content = current_sheet.cell(pos_to_check[0], pos_to_check[1]).value
+                cellcontent_st = current_sheet.cell(pos_to_check[0], pos_to_check[1]).value
             except: 
-                report_content.append(WARNING + UNABLE_TO_READ + LIST_TO_CHECK[index])
+                ReportContent_lst.append(WARNING + UNABLE_TO_READ + LIST_TO_CHECK[index])
                 continue
 
-            review_Content(cell_content.strip(), LIST_TO_CHECK[index])
+            ReviewContent(cellcontent_st.strip(), LIST_TO_CHECK[index])
             
 
 #################################################
 
 
-def review_Content(cell_content, content_refer):
-    if not (cell_content):
-        report_content.append(WARNING + content_refer + CONTENT_EMPTY)
+def ReviewContent(cellcontent_st, reference_st):
+    if not (cellcontent_st):
+        ReportContent_lst.append(WARNING + reference_st + CONTENT_EMPTY)
 
-    if (content_refer in (SET_GLOBAL_VARIABLES, SET_PARAMETERS, SET_STUB_FUNCTIONS)):
+    if (reference_st in (SET_GLOBAL_VARIABLES, SET_PARAMETERS, SET_STUB_FUNCTIONS)):
         for to_check in LIST_REMAINING_TO_CHECK:
-            if (to_check in cell_content):
-                count = cell_content.count(to_check)
-                report_content.append(WARNING + str(count) + SPACE + to_check + REMAINING + IN + SPACE + content_refer)
+            if (to_check in cellcontent_st):
+                redundant_int = cellcontent_st.count(to_check)
+                ReportContent_lst.append(WARNING + str(redundant_int) + SPACE + to_check + REMAINING + IN + SPACE + reference_st)
 
 
 #################################################
