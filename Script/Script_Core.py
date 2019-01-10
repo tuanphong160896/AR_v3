@@ -1,8 +1,8 @@
 import os
 from Common_Def import *
 from Common_API import *
-from Script_Report_Def import *
-from Script_API import *
+from .Script_Report_Def import *
+from .Script_API import *
 
 #################################################
 

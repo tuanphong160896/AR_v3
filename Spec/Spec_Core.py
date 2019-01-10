@@ -2,7 +2,7 @@ import os
 import xlrd
 from Common_Def import *
 from Common_API import *
-from Spec_Report_Def import *
+from .Spec_Report_Def import *
 
 #################################################
 

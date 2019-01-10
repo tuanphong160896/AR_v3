@@ -13,7 +13,8 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QToolButton, QPu
 from datetime import datetime
 from git import Repo
 from Common_Def import *
-import Script_Core, Spec_Core
+from Script.Script_Core import Script_MainFunction
+from Spec.Spec_Core import Spec_MainFunction
 
 #################################################
 
@@ -116,7 +117,7 @@ class App(QMainWindow):
             QMessageBox.warning(self, 'Auto Review Tool', 'Plese input a directory')
         else:
             reportname_st = GetReportName(rootdir_st, 'Script')
-            Script_Core.Script_MainFunction(rootdir_st, reportname_st)
+            Script_MainFunction(rootdir_st, reportname_st)
             self.button_open.setEnabled(True)
             QMessageBox.warning(self, 'Auto Review Tool', 'Review Test Script done !')
 
@@ -128,7 +129,7 @@ class App(QMainWindow):
             QMessageBox.warning(self, 'Auto Review Tool', 'Plese input a directory')
         else:
             reportname_st = GetReportName(rootdir_st, 'Spec')
-            Spec_Core.Spec_MainFunction(rootdir_st, reportname_st)
+            Spec_MainFunction(rootdir_st, reportname_st)
             self.button_open.setEnabled(True)
             QMessageBox.warning(self, 'Auto Review Tool', 'Review Test Spec done !')
 
