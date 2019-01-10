@@ -19,15 +19,15 @@ from Script_API import *
 #################################################
 
 
-def Script_MainFunction(inputdir_st, reportname_st):
+def Script_MainFunction(inputdir_st, reportname_st) -> None:
     global ReportContent_lst        #1 
     ReportContent_lst = InitList(1)
 
     ScriptDir_st = inputdir_st + TEST_SCRIPT_DIR    #2
     ScriptFile_lst = GetScriptList(ScriptDir_st)     #3
 
-    for scriptfile in ScriptFile_lst:     #4
-        ScanTestScript(scriptfile)
+    for scriptdir in ScriptFile_lst:     #4
+        OpenTestScript(scriptdir)
 
     Export_Report(reportname_st, ReportContent_lst)     #5
 
@@ -44,7 +44,7 @@ def Script_MainFunction(inputdir_st, reportname_st):
 #################################################
 
 
-def GetScriptList(ScriptDir_st):
+def GetScriptList(ScriptDir_st) -> list:
     allfiles_lst = InitList(1)     #1
 
     for path, subdirs, files in os.walk(ScriptDir_st):      #2
@@ -60,7 +60,7 @@ def GetScriptList(ScriptDir_st):
 
 #################################################
 
-# Name: ScanTestScript
+# Name: OpenTestScript
 # Param: scriptdir: directory to each test script
 # Return: None
 # Description: Beginning review process
@@ -73,7 +73,7 @@ def GetScriptList(ScriptDir_st):
 #################################################
 
 
-def ScanTestScript(scriptdir):
+def OpenTestScript(scriptdir) -> None:
     ReportContent_lst.append(START_C_FILE + scriptdir + PROCESSING)     #1
     try:        #2
         Cfile_temp = open(scriptdir, 'r')
@@ -112,7 +112,7 @@ def ScanTestScript(scriptdir):
 #################################################
 
 
-def ReviewTestCases(allcodes_lst, begin_counter):
+def ReviewTestCases(allcodes_lst, begin_counter) -> None:
     state_st = UNDEFINED_STATE      #1
     TesterDef_lst, ExptCalls_lst, Checked_lst, CalledSeq_lst, VerfCrit_lst = InitList(5)        #2
     
@@ -207,7 +207,7 @@ def BeginTestCase(lineofcode, linecounter):
 ################################################# 
 
 
-def GetCalledSeq(ExptCalls_lst, CalledSeq_lst):
+def GetCalledSeq(ExptCalls_lst, CalledSeq_lst) -> None:
     for lineofcode in ExptCalls_lst:
         if (isCalledSeq(lineofcode)):       #1
             calledseq_st = getInsideQuote(lineofcode)       
@@ -237,7 +237,7 @@ def GetCalledSeq(ExptCalls_lst, CalledSeq_lst):
 ################################################# 
 
 
-def CheckTesterDefine(TesterDef_lst):
+def CheckTesterDefine(TesterDef_lst) -> None:
     declared_lst, initialised_lst = InitList(2)
 
     for lineofcode in TesterDef_lst:
@@ -269,7 +269,7 @@ def CheckTesterDefine(TesterDef_lst):
 ##################################################  
 
 
-def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst):
+def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst) -> None:
     for tocheck in TO_CHECK_LST:
         if ((tocheck not in Checked_lst) and (tocheck != TESTERDEFINE_STR)):    #1
             ReportContent_lst.append(WARNING + LACKOF + tocheck)
@@ -307,7 +307,7 @@ def CheckTOCHECKLIST(Checked_lst, VerfCrit_lst):
 #################################################
 
 
-def ReviewCallInterface(allcodes_lst, CalledSeq_lst, begin_counter):
+def ReviewCallInterface(allcodes_lst, CalledSeq_lst, begin_counter) -> None:
     ReportContent_lst.append(START_STUBFNC + PROCESSING)
 
     state_st = UNDEFINED_STATE      #1
@@ -407,7 +407,7 @@ def CheckUsedFnc(fncname_st, CalledSeq_lst) -> bool:
 ################################################
 
 
-def CheckFncInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst):
+def CheckFncInstance(fncname_st, paramcnt_int, InstanceContent_lst, CalledSeq_lst) -> None:
     checkcnt_int = 0
     for lineofcode in InstanceContent_lst:      #1
         if (isBeginInstance(lineofcode)):

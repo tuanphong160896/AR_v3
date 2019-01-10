@@ -15,10 +15,12 @@ from git import Repo
 from Common_Def import *
 import Script_Core, Spec_Core
 
+#################################################
 
-############################################################################
+# Class: App
+# Description: Init GUI anf some linkage functions
 
-
+#################################################
 
 class App(QMainWindow):
     def __init__(self):
@@ -27,9 +29,12 @@ class App(QMainWindow):
         self.setWindowIcon(QtGui.QIcon('github.ico'))
         self.initUI()
 
+#################################################
 
- #################################################
+# Name: initUI
+# Description: Create GUI, textboxes, buttons,..
 
+#################################################
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -72,100 +77,114 @@ class App(QMainWindow):
         self.button_browse = QToolButton(self)
         self.button_browse.setText('...')
         self.button_browse.setGeometry(QRect(340, 130, 32, 32))
-        self.button_browse.clicked.connect(self.browse_root_dir)
+        self.button_browse.clicked.connect(self.BrowseDirectory)
 
         # Create Review Script button
         self.button_script = QPushButton('Review Test Script', self)
         self.button_script.setGeometry(QRect(25, 190, 110, 35))
-        self.button_script.clicked.connect(self.Review_Test_Script)
+        self.button_script.clicked.connect(self.ReviewScript)
 
         # Create Review Spec button
         self.button_spec = QPushButton('Review Test Spec', self)
         self.button_spec.setGeometry(QRect(155, 190, 110, 35))
-        self.button_spec.clicked.connect(self.Review_Test_Spec)
+        self.button_spec.clicked.connect(self.ReviewSpec)
 
         #Create open newest .txt file
         self.button_open = QPushButton('Open Report', self)
         self.button_open.setGeometry(QRect(285, 190, 90, 35))
         self.button_open.setEnabled(False)
-        self.button_open.clicked.connect(Open_latest_report)
+        self.button_open.clicked.connect(OpenReport)
 
         self.move(500, 200)
         self.show() 
 
-
 #################################################
 
-
-    def browse_root_dir(self):
+    def BrowseDirectory(self):
         try:
             self.input_directory = QFileDialog.getExistingDirectory(None, 'Select folder:')
             self.textbox.setText(self.input_directory)
 
         except Exception as e:
-            messagebox.showinfo('Auto Review Tool', e)
-
+            messagebox.showinfo_st('Auto Review Tool', e)
            
 #################################################
 
-
-    def Review_Test_Script(self):
-        root_dir = self.textbox.text()
-        if (len(root_dir) == 0):
+    def ReviewScript(self):
+        rootdir_st = self.textbox.text()
+        if not (len(rootdir_st)):
             QMessageBox.warning(self, 'Auto Review Tool', 'Plese input a directory')
         else:
-            report_name = getReportName(root_dir, 'Script')
-            Script_Core.Script_MainFunction(root_dir, report_name)
+            reportname_st = GetReportName(rootdir_st, 'Script')
+            Script_Core.Script_MainFunction(rootdir_st, reportname_st)
             self.button_open.setEnabled(True)
             QMessageBox.warning(self, 'Auto Review Tool', 'Review Test Script done !')
-           
 
 #################################################
 
-
-    def Review_Test_Spec(self):
-        root_dir = self.textbox.text()
-        if (len(root_dir) == 0):
+    def ReviewSpec(self):
+        rootdir_st = self.textbox.text()
+        if not (len(rootdir_st)):
             QMessageBox.warning(self, 'Auto Review Tool', 'Plese input a directory')
         else:
-            report_name = getReportName(root_dir, 'Spec')
-            Spec_Core.Spec_MainFunction(root_dir, report_name)
+            reportname_st = GetReportName(rootdir_st, 'Spec')
+            Spec_Core.Spec_MainFunction(rootdir_st, reportname_st)
             self.button_open.setEnabled(True)
             QMessageBox.warning(self, 'Auto Review Tool', 'Review Test Spec done !')
 
 
 #################################################
 
-
-def getReportName(root_dir, report_type):
-    root_dir = root_dir.replace(BACKSLASH, SLASH)
-    compname_idx = root_dir.rfind(SLASH)
-    comp_name = root_dir[compname_idx+1:]
-    git_dir = root_dir.split(GITLOCATION, 1)[0]
-
-    if (GITFOLDER in os.listdir(git_dir)):
-        try:
-            repo = Repo(os.path.join(git_dir, GITFOLDER))
-            info = str(repo.active_branch)
-            if (info == BRANCHMASTER): 
-                info = info + '_' + comp_name
-        except:
-            info = comp_name
-    else:
-        info = comp_name
-
-    #get datetime
-    time = str(datetime.now().strftime('%H%M%S'))
-
-    #Report name
-    report_name = REPORT_PREFIX + report_type + '_' + info + '_' + time + TXTFILETYPE
-    return report_name
-
+# Name: GetReportName
+# Param: rootdir_st: input directory by user
+#        reporttype_st: type of object to review: Script/Spec
+# Return: reportname_st: String of report name
+# Description: Collect some information to generate report name
+#              #1: Found name of comoponent under test
+#              #2: Found Git folder in parent directories
+#                  If found, get the current active branch (tester's branch)
+#              #3: Get current time to make sure no report name is duplicated
 
 #################################################
 
 
-def Open_latest_report():
+def GetReportName(rootdir_st, reporttype_st) -> str:
+    rootdir_st = rootdir_st.replace(BACKSLASH, SLASH)
+    compname_idx = rootdir_st.rfind(SLASH)      #2
+    compname_st = rootdir_st[compname_idx+1:]
+    gitdir_st = rootdir_st.split(GITLOCATION, 1)[0]
+
+    if (GITFOLDER in os.listdir(gitdir_st)):        #2
+        try:
+            repo = Repo(os.path.join(gitdir_st, GITFOLDER))
+            info_st = str(repo.active_branch)
+            if (info_st == BRANCHMASTER): 
+                info_st = info_st + '_' + compname_st
+        except:
+            info_st = compname_st
+    else:
+        info_st = compname_st
+
+    #get datetime
+    time_st = str(datetime.now().strftime('%H%M%S'))        #3
+
+    #Report name
+    reportname_st = REPORT_PREFIX + reporttype_st + '_' + info_st + '_' + time_st + TXTFILETYPE
+    return reportname_st
+
+
+#################################################
+
+# Name: OpenReport
+# Param: None
+# Return: None
+# Description: Get the latest .txt file in current folder.
+#              If no Notepad++ installed, open by Notepad Windows
+
+#################################################
+
+
+def OpenReport():
     latest_file = max(glob.glob('*.txt'), key=os.path.getctime)
     try:
         os.system('start notepad++.exe ' + latest_file)
